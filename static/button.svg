@@ -1,0 +1,16 @@
+<svg width="130" height="29.000000000000004" xmlns="http://www.w3.org/2000/svg">
+ <title>Deploy to now</title>
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="402" width="582" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <g id="svg_1" fill-rule="evenodd" fill="none">
+   <rect x="0" y="-0.000005" stroke="null" id="svg_2" rx="4" height="29" width="130" fill="#000"/>
+   <text font-weight="normal" xml:space="preserve" text-anchor="start" font-family="'Courier New', Courier, monospace" font-size="12" id="svg_12" y="18.005209" x="9.750022" stroke-opacity="null" stroke-width="0" stroke="null" fill="#ffffff">dropstack</text>
+   <text font-weight="normal" xml:space="preserve" text-anchor="start" font-family="'Courier New', Courier, monospace" font-size="12" id="svg_14" y="17.828126" x="77.916653" fill-opacity="null" stroke-opacity="null" stroke-width="0" stroke="null" fill="#ffffff">deploy</text>
+  </g>
+ </g>
+</svg>

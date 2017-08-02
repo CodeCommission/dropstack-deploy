@@ -1,0 +1,26 @@
+{
+  "private": true,
+  "version": "0.0.0",
+  "name": "dropstack-deploy",
+  "description": "Dropstack web deploy",
+  "engines": {
+    "node": "^6"
+  },
+  "dependencies": {
+    "form-data": "^2.2.0",
+    "fs-extra": "^4.0.1",
+    "gunzip-maybe": "^1.4.1",
+    "memory-stream": "0.0.3",
+    "parse-github-url": "^1.0.0",
+    "reunify": "latest",
+    "tar-fs": "^1.15.3"
+  },
+  "scripts": {
+    "export": "NODE_ENV=production reunify export",
+    "export:dev": "NODE_ENV=production reunify export -d",
+    "export:package": "NODE_ENV=production reunify export -p",
+    "export:package:dev": "NODE_ENV=production reunify export -p -d",
+    "dev": "PORT=8080 NODE_ENV=development reunify serve",
+    "start": "PORT=80 NODE_ENV=production reunify serve --silent"
+  }
+}
