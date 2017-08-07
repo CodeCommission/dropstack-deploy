@@ -1,60 +1,55 @@
 import React from 'react'
+import styled from 'styled-components'
 
-const styles = {
-  // h2: style({
-  //   fontSize: '13px',
-  //   fontWeight: 700
-  // }),
-  // pre: style({
-  //   backgroundColor: '#f7f7f7',
-  //   padding: 15,
-  //   whiteSpace: 'pre-wrap',
-  //   lineHeight: 1.4
-  // }),
-  // code: style({
-  //   background: 'rgba(0,0,0,0.04)',
-  //   padding: '0.2em',
-  //   fontSize: '95%'
-  // }),
-  // noBorder: style({
-  //   border: 'none'
-  // }),
-  // img: style({
-  //   margin: '15px 0'
-  // })
-}
+const Main = styled.div`
+  font-family: Consolas, monaco, monospace;
+  max-width: 800px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  padding: 0;
+`
+
+const Code = styled.code`
+  background-color: #f7f7f7;
+`
+
+const Pre = styled.pre`
+  background-color: #f7f7f7;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  line-height: 19px;
+  padding: 15px;
+`
 
 const Usage = () => (
-  <div>
-    <h2 className={styles.h2}>## Usage</h2>
+  <Main>
+    <h3>### Usage</h3>
     <p>To add one-click deploys to your open source project, include the button to your
     readme:</p>
 
-    <pre className={styles.pre}>
-      [![Deploy to dropstack](https://deploy.dropstack.run/button.svg)](https://deploy.dropstack.run/?repo=https://github.com/zpnk/hello-world)
-    </pre>
+    <Pre>[![Deploy to dropstack](https://deploy.cloud.dropstack.run/button.svg)](https://deploy.cloud.dropstack.run/?repo=https://github.com/zpnk/hello-world)</Pre>
     <p>
-      Be sure to set the <code className={styles.code}>repo</code> parameter to the GitHub url of your project.
+      Be sure to set the <Code>repo</Code> parameter to the GitHub url of your project.
       This will result in the following link:
     </p>
 
     <p>
-      <a href="https://deploy.dropstack.run/?repo=https://github.com/zpnk/hello-world" className={styles.noBorder}>
-        <img src="button.svg" className={styles.img} />
+      <a href="https://deploy.cloud.dropstack.run/?repo=https://github.com/zpnk/hello-world">
+        <img src="button.svg" />
       </a>
     </p>
 
     <p>
       If your app requires users to specify environment variables,
-      you may include these in the <code className={styles.code}>deploy</code> url:
+      you may include these in the <Code>deploy</Code> url:
     </p>
 
-    <pre className={styles.pre}>
-      https://deploy.dropstack.run/?repo=https://github.com/zpnk/hello-world&env=GREETING&env=RECIPIENT
-    </pre>
+    <Pre>https://deploy.cloud.dropstack.run/?repo=https://github.com/zpnk/hello-world&env=GREETING&env=RECIPIENT</Pre>
 
     <p>The user will then be asked for these when deploying the app.</p>
-  </div>
+  </Main>
 )
 
 export default Usage
