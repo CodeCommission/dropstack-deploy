@@ -26,7 +26,7 @@ const Pre = styled.pre`
 
 const Usage = () => (
   <Main>
-    <h3>### Usage</h3>
+    <h3>### usage</h3>
     <p>
       <a href="https://deploy.cloud.dropstack.run?repo=https://github.com/CodeCommission/dropstack-examples/tree/master/html-example">
         <img src="button.svg" />

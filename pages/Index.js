@@ -27,7 +27,7 @@ const Footer = styled.footer`
   color: black;
 `
 
-const FooterLink = styled.a`
+const PrimaryLink = styled.a`
   font-family: Consolas, monaco, monospace;
   color: black;
 
@@ -179,7 +179,7 @@ export default class Index extends React.Component {
     const es = new EventSource(`https://api.cloud.dropstack.run/deploys/live`, {headers: {authorization: `Bearer ${this.state.token}`, connection: 'keep-alive', 'cache-control': 'no-cache'}});
     es.onerror = e => {
       es.close()
-      this.setState({deployError: 'Deploy error occurred', isLoading: false})
+      this.setState({deployError: 'Deployment error occurred. Retry please.', isLoading: false})
     }
     es.onmessage = e => {
      let progressState = {};
@@ -196,7 +196,7 @@ export default class Index extends React.Component {
     }
     es.onopen = e => {
       const serviceVariables = this.state.envVars.map(x => x.join('=')).join(',')
-      fetch(`/deploy`, {body: JSON.stringify({repo: this.state.repo, envVars: serviceVariables, token: this.state.token}), method: 'POST', headers: {authorization: `Bearer ${this.state.token}`, 'content-type': 'application/json'}})
+      fetch(`/deploy`, {body: JSON.stringify({repo: this.state.repo, envVars: serviceVariables, token: this.state.token, alias: this.state.alias}), method: 'POST', headers: {authorization: `Bearer ${this.state.token}`, 'content-type': 'application/json'}})
       .then(response => response.json())
       .then(data => this.setState({deployment: data}))
       .catch(error => this.setState({deployError: error.message}))
@@ -226,9 +226,9 @@ export default class Index extends React.Component {
     return (
       <Main>
         <h1># dropstack deploy</h1>
-        <small>&gt; One click deploys to the <a href="https://dropstack.run">dropstack|cloud</a></small>
+        <small>&gt; One click deploys to <PrimaryLink href="https://dropstack.run" target="_blank">dropstack|cloud</PrimaryLink></small>
         <HeaderBox>
-          <h2>## Deploying</h2>
+          <h2>## deploying</h2>
           <div>{repository ? `${repository} ${path} directory in ` : ''}{branch ? `${branch} branch of ` : ''}<RepoLink href={href} target="_blank">{name}</RepoLink></div>
         </HeaderBox>
         <div>
@@ -292,14 +292,14 @@ export default class Index extends React.Component {
         <Usage />
         <Footer>
           <span>
-            built by <FooterLink href="https://github.com/mikebild">@mikebild</FooterLink>
+            built by <PrimaryLink href="https://github.com/mikebild">@mikebild</PrimaryLink>
             {' '}&{' '}
-            <FooterLink href="https://github.com/codecommission">@codecommission</FooterLink>
+            <PrimaryLink href="https://github.com/codecommission">@codecommission</PrimaryLink>
           </span>
           <span>
-            powered by <FooterLink href="https://www.dropstack.run">dropstack</FooterLink>
+            powered by <PrimaryLink href="https://www.dropstack.run">dropstack</PrimaryLink>
             {' '}|{' '}
-            <FooterLink href="https://github.com/codecommission/dropstack-deploy">source</FooterLink>
+            <PrimaryLink href="https://github.com/codecommission/dropstack-deploy">source</PrimaryLink>
           </span>
         </Footer>
       </Main>
