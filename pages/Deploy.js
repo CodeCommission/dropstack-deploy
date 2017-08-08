@@ -1,4 +1,3 @@
-// http://0.0.0.0:8080/deploy?repo=https://github.com/CodeCommission/linklet-examples/tree/master/basic-function
 export default {
   async getInitialProps(req, res) {
     res.writeHead(200)
@@ -34,12 +33,7 @@ export default {
         console.log('Repacking done')
         const form = new FormData()
         const startDate = new Date()
-        // form.append('serviceName', '')
-        // form.append('serviceAlias', '')
-        // form.append('serviceHTTPS', '')
-        // form.append('serviceType', '')
-        // form.append('serviceInstances', '1')
-        // form.append('serviceAliveEndpoint', '')
+        form.append('serviceAlias', req.body.alias)
         form.append('serviceVariables', req.body.envVars)
         form.append(tranferToTarFileName, fs.createReadStream(tranferToTarFileName))
 

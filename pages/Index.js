@@ -93,6 +93,7 @@ const ErrorMessage = styled.span`
   font-size: 11px;
   font-family: Consolas, monaco, monospace;
   color: red;
+  display: inline-block;
 `
 
 const DeploymentBox = styled.div`
@@ -134,6 +135,16 @@ const RepoLink = styled.a`
 const HeaderBox = styled.div`
   font-size: 12px;
   padding: 15px 0;
+`
+
+const DeploymentInputBox = styled.div`
+  padding: 5px 0;
+`
+
+const DeploymentInputLabel = styled.div`
+  font-size: 11px;
+  font-weight: bold;
+  display: inline-block;
 `
 
 export default class Index extends React.Component {
@@ -218,38 +229,40 @@ export default class Index extends React.Component {
         <small>&gt; One click deploys to the <a href="https://dropstack.run">dropstack|cloud</a></small>
         <HeaderBox>
           <h2>## Deploying</h2>
-          <div>{repository ? `${repository} ${path} directory in ` : ''}{branch ? `${branch} branch of ` : ''}<RepoLink href={href} target="_blank">{name}</RepoLink>.</div>
+          <div>{repository ? `${repository} ${path} directory in ` : ''}{branch ? `${branch} branch of ` : ''}<RepoLink href={href} target="_blank">{name}</RepoLink></div>
         </HeaderBox>
         <div>
-          <DeployInput type="text" placeholder="URL to a GitHub repo" defaultValue={href} onBlur={e => this.setState({repo: e.target.value})} />
-          {
-            this.state.repoError &&
-            <ErrorMessage>{this.state.repoError}</ErrorMessage>
-          }
-          <br />
-          <DeployInput type="text" placeholder="API JWT" defaultValue={this.state.token} onBlur={e => this.setState({token: e.target.value})}/>
-          {
-            this.state.tokenError &&
-            <ErrorMessage>{this.state.tokenError}</ErrorMessage>
-          }
-          <br />
-          {
-            this.state.envVars.map((x, i) =>
-              <div key={i}>
-                <DeployEnvVarInput type="text" placeholder={`ENV_VAR_${i}`} onBlur={e => this.addEnvVarKey(e.target.value, i)} />=<DeployEnvVarInput type="text" placeholder="value" onBlur={e => this.addEnvVarValue(e.target.value, i)}/>
-                <RemoveEnvVarButton onClick={() => this.removeEnvVar(i)}>-</RemoveEnvVarButton>
-              </div>
-            )
-          }
+          <DeploymentInputBox>
+            <DeploymentInputLabel>URL to a GitHub repo</DeploymentInputLabel>&nbsp;{this.state.repoError && <ErrorMessage>{this.state.repoError}</ErrorMessage>}
+            <DeployInput type="text" placeholder="https://github.com/CodeCommission/dropstack-examples/tree/master/html-example" defaultValue={href} onBlur={e => this.setState({repo: e.target.value})} />
+          </DeploymentInputBox>
+          <DeploymentInputBox>
+            <DeploymentInputLabel>API JSON Web Token (JWT)</DeploymentInputLabel>&nbsp;{this.state.tokenError && <ErrorMessage>{this.state.tokenError}</ErrorMessage>}
+            <DeployInput type="text" placeholder="API JWT" defaultValue={this.state.token} onBlur={e => this.setState({token: e.target.value})}/>
+          </DeploymentInputBox>
+          <DeploymentInputBox>
+            <DeploymentInputLabel>Alias</DeploymentInputLabel>
+            <DeployInput type="text" placeholder="my-service.example.com" defaultValue={this.state.alias} onBlur={e => this.setState({alias: e.target.value})}/>
+          </DeploymentInputBox>
+          <DeploymentInputBox>
+            <DeploymentInputLabel>Environment Variables</DeploymentInputLabel>
+            {
+              this.state.envVars.map((x, i) =>
+                <div key={i}>
+                  <DeployEnvVarInput type="text" placeholder={`ENV_VAR_${i}`} onBlur={e => this.addEnvVarKey(e.target.value, i)} />=<DeployEnvVarInput type="text" placeholder="value" onBlur={e => this.addEnvVarValue(e.target.value, i)}/>
+                  <RemoveEnvVarButton onClick={() => this.removeEnvVar(i)}>-</RemoveEnvVarButton>
+                </div>
+              )
+            }
+          </DeploymentInputBox>
           <DeployButton onClick={() => this.setState({envVars: this.state.envVars.concat([''])})}>Add environment variable</DeployButton>
         </div>
-        <hr />
         <div>
           <DeployButton disabled={this.state.isLoading} onClick={() => this.deploy()}><strong>DEPLOY</strong></DeployButton>
         </div>
         <DeploymentBox>
           <div>
-            <DeploymentBoxLabel>Progress</DeploymentBoxLabel>
+            <DeploymentBoxLabel>State</DeploymentBoxLabel>
             {
               this.state.deployError
               ? <ErrorMessage>{this.state.deployError}</ErrorMessage>
@@ -259,6 +272,14 @@ export default class Index extends React.Component {
           <div><DeploymentBoxLabel>Name</DeploymentBoxLabel><span>{this.state.deployment.serviceName || '-'}</span></div>
           <div><DeploymentBoxLabel>Type</DeploymentBoxLabel><span>{this.state.deployment.serviceType || '-'}</span></div>
           <div><DeploymentBoxLabel>Instances</DeploymentBoxLabel><span>{this.state.deployment.serviceInstances || '-'}</span></div>
+          <div>
+            <DeploymentBoxLabel>Alias</DeploymentBoxLabel>
+            {
+              this.state.deployment.serviceAlias
+              ? <DeploymentServiceLink href={`https://${this.state.deployment.serviceAlias}`} target="_blank">{`https://${this.state.deployment.serviceAlias}`}</DeploymentServiceLink>
+              : <span>-</span>
+            }
+          </div>
           <div>
             <DeploymentBoxLabel>URL</DeploymentBoxLabel>
             {

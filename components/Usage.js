@@ -27,29 +27,20 @@ const Pre = styled.pre`
 const Usage = () => (
   <Main>
     <h3>### Usage</h3>
-    <p>To add one-click deploys to your open source project, include the button to your
-    readme:</p>
-
-    <Pre>[![Deploy to dropstack](https://deploy.cloud.dropstack.run/button.svg)](https://deploy.cloud.dropstack.run/?repo=https://github.com/zpnk/hello-world)</Pre>
     <p>
-      Be sure to set the <Code>repo</Code> parameter to the GitHub url of your project.
-      This will result in the following link:
-    </p>
-
-    <p>
-      <a href="https://deploy.cloud.dropstack.run/?repo=https://github.com/zpnk/hello-world">
+      <a href="https://deploy.cloud.dropstack.run?repo=https://github.com/CodeCommission/dropstack-examples/tree/master/html-example">
         <img src="button.svg" />
       </a>
     </p>
 
+    <p>To add one-click deploys to your open source project, include the button to your
+    readme:</p>
+
+    <Pre>[![Deploy to dropstack](https://deploy.cloud.dropstack.run/button.svg)](https://deploy.cloud.dropstack.run?repo=https://github.com/CodeCommission/dropstack-examples/tree/master/html-example)</Pre>
     <p>
-      If your app requires users to specify environment variables,
-      you may include these in the <Code>deploy</Code> url:
+      Be sure to set the <Code>repo</Code> parameter to the GitHub url of your project.
+      This will result in the following link:
     </p>
-
-    <Pre>https://deploy.cloud.dropstack.run/?repo=https://github.com/zpnk/hello-world&env=GREETING&env=RECIPIENT</Pre>
-
-    <p>The user will then be asked for these when deploying the app.</p>
   </Main>
 )
 
