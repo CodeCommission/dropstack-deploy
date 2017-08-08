@@ -2,11 +2,12 @@ import React from 'react'
 import styled from 'styled-components'
 import parseGitHubURL from 'parse-github-url'
 import Usage from '../components/Usage'
+import EventSource from 'eventsource'
 
 const Main = styled.div`
   font-family: Consolas, monaco, monospace;
   max-width: 800px;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   margin: 0 auto;
@@ -14,7 +15,8 @@ const Main = styled.div`
 `
 
 const Footer = styled.footer`
-  -webkit-box-pack: justify;
+  font-family: Consolas, monaco, monospace;
+  box-pack: justify;
   margin-top: auto;
   margin-bottom: 40px;
   padding-top: 40px;
@@ -22,6 +24,19 @@ const Footer = styled.footer`
   justify-content: space-between;
   color: rgb(102, 102, 102);
   font-size: 11px;
+  color: black;
+`
+
+const FooterLink = styled.a`
+  font-family: Consolas, monaco, monospace;
+  color: black;
+
+  :hover {
+    color: black;
+  }
+  :visited {
+    color: black;
+  }
 `
 
 const DeployInput = styled.input`
@@ -74,39 +89,155 @@ const RemoveEnvVarButton = styled.button`
   background-color: white;
 `
 
+const ErrorMessage = styled.span`
+  font-size: 11px;
+  font-family: Consolas, monaco, monospace;
+  color: red;
+`
+
+const DeploymentBox = styled.div`
+  font-size: 11px;
+  font-family: Consolas, monaco, monospace;
+  padding: 15px 0;
+`
+
+const DeploymentBoxLabel = styled.span`
+  display: inline-block;
+  width: 100px;
+`
+
+const DeploymentServiceLink = styled.a`
+  font-size: 11px;
+  font-family: Consolas, monaco, monospace;
+  color: black;
+
+  :hover {
+    color: black;
+  }
+  :visited {
+    color: black;
+  }
+`
+
+const RepoLink = styled.a`
+  font-family: Consolas, monaco, monospace;
+  color: black;
+
+  :hover {
+    color: black;
+  }
+  :visited {
+    color: black;
+  }
+`
+
+const HeaderBox = styled.div`
+  font-size: 12px;
+  padding: 15px 0;
+`
+
 export default class Index extends React.Component {
   state = {
     envVars: [],
+    repo: this.props.repo.href,
+    token: '',
+    deployment: {},
+    isLoading: false,
+    repoError: '',
+    tokenError: '',
+    deployError: '',
   }
 
   static async getInitialProps({query}) {
+    const path = require('path')
     const repo = parseGitHubURL(query.repo) || {}
+    if(repo.pathname) repo.path = path.parse(repo.pathname).name
     return { repo }
   }
 
+  deploy () {
+    if(!this.state.repo) this.setState({repoError: 'Missing'})
+    else this.setState({repoError: ''})
+
+    if(!this.state.token) this.setState({tokenError: 'Missing'})
+    else this.setState({tokenError: ''})
+
+    if(!(this.state.repo && this.state.token)) return
+
+    this.setState({isLoading: true, deployError: ''})
+    const es = new EventSource(`https://api.cloud.dropstack.run/deploys/live`, {headers: {authorization: `Bearer ${this.state.token}`, connection: 'keep-alive', 'cache-control': 'no-cache'}});
+    es.onerror = e => {
+      es.close()
+      this.setState({deployError: 'Deploy error occurred', isLoading: false})
+    }
+    es.onmessage = e => {
+     let progressState = {};
+      try {
+        progressState = JSON.parse(e.data)
+      } catch(e) {}
+
+      this.setState({deployment: Object.assign({}, this.state.deployment, progressState)})
+
+      if(progressState.deployProgress === 'registrated') {
+        es.close()
+        this.setState({isLoading: false})
+      }
+    }
+    es.onopen = e => {
+      const serviceVariables = this.state.envVars.map(x => x.join('=')).join(',')
+      fetch(`/deploy`, {body: JSON.stringify({repo: this.state.repo, envVars: serviceVariables, token: this.state.token}), method: 'POST', headers: {authorization: `Bearer ${this.state.token}`, 'content-type': 'application/json'}})
+      .then(response => response.json())
+      .then(data => this.setState({deployment: data}))
+      .catch(error => this.setState({deployError: error.message}))
+    }
+  }
+
+  addEnvVarKey(key, index) {
+    this.state.envVars[index] = [key, '']
+    this.setState({envVars: this.state.envVars})
+    console.log(this.state.envVars)
+  }
+
+  addEnvVarValue(value, index) {
+    this.state.envVars[index] = [this.state.envVars[index][0], value]
+    this.setState({envVars: this.state.envVars})
+    console.log(this.state.envVars)
+  }
+
+  removeEnvVar(index) {
+    delete this.state.envVars[index];
+    this.setState({envVars: this.state.envVars});
+  }
+
   render() {
-    const {branch, owner, name, repository, href} = this.props.repo
+    const {branch, owner, name, repository, href, path} = this.props.repo
 
     return (
       <Main>
         <h1># dropstack deploy</h1>
         <small>&gt; One click deploys to the <a href="https://dropstack.run">dropstack|cloud</a></small>
-        <hr />
-        <div>
+        <HeaderBox>
           <h2>## Deploying</h2>
-          <div>{repository ? `${repository} directory in ` : ''}{branch ? `${branch} branch of ` : ''}<a href={href}>{name}</a></div>
-        </div>
-        <hr />
+          <div>{repository ? `${repository} ${path} directory in ` : ''}{branch ? `${branch} branch of ` : ''}<RepoLink href={href} target="_blank">{name}</RepoLink>.</div>
+        </HeaderBox>
         <div>
-          <DeployInput type="text" placeholder="URL to a GitHub repo" defaultValue={href}/>
+          <DeployInput type="text" placeholder="URL to a GitHub repo" defaultValue={href} onBlur={e => this.setState({repo: e.target.value})} />
+          {
+            this.state.repoError &&
+            <ErrorMessage>{this.state.repoError}</ErrorMessage>
+          }
           <br />
-          <DeployInput type="text" placeholder="API token" />
+          <DeployInput type="text" placeholder="API JWT" defaultValue={this.state.token} onBlur={e => this.setState({token: e.target.value})}/>
+          {
+            this.state.tokenError &&
+            <ErrorMessage>{this.state.tokenError}</ErrorMessage>
+          }
           <br />
           {
             this.state.envVars.map((x, i) =>
               <div key={i}>
-                <DeployEnvVarInput type="text" placeholder={`ENV_VAR_${i}`} />=<DeployEnvVarInput type="text" placeholder="value" />
-                <RemoveEnvVarButton onClick={() => { delete this.state.envVars[i]; this.setState({envVars: this.state.envVars}); }}>-</RemoveEnvVarButton>
+                <DeployEnvVarInput type="text" placeholder={`ENV_VAR_${i}`} onBlur={e => this.addEnvVarKey(e.target.value, i)} />=<DeployEnvVarInput type="text" placeholder="value" onBlur={e => this.addEnvVarValue(e.target.value, i)}/>
+                <RemoveEnvVarButton onClick={() => this.removeEnvVar(i)}>-</RemoveEnvVarButton>
               </div>
             )
           }
@@ -114,11 +245,41 @@ export default class Index extends React.Component {
         </div>
         <hr />
         <div>
-          <DeployButton><strong>DEPLOY</strong></DeployButton>
+          <DeployButton disabled={this.state.isLoading} onClick={() => this.deploy()}><strong>DEPLOY</strong></DeployButton>
         </div>
+        <DeploymentBox>
+          <div>
+            <DeploymentBoxLabel>Progress</DeploymentBoxLabel>
+            {
+              this.state.deployError
+              ? <ErrorMessage>{this.state.deployError}</ErrorMessage>
+              : <span>{this.state.deployment.deployProgress || '-'}</span>
+            }
+          </div>
+          <div><DeploymentBoxLabel>Name</DeploymentBoxLabel><span>{this.state.deployment.serviceName || '-'}</span></div>
+          <div><DeploymentBoxLabel>Type</DeploymentBoxLabel><span>{this.state.deployment.serviceType || '-'}</span></div>
+          <div><DeploymentBoxLabel>Instances</DeploymentBoxLabel><span>{this.state.deployment.serviceInstances || '-'}</span></div>
+          <div>
+            <DeploymentBoxLabel>URL</DeploymentBoxLabel>
+            {
+              this.state.deployment.serviceUrl
+              ? <DeploymentServiceLink href={`https://${this.state.deployment.serviceUrl}`} target="_blank">{`https://${this.state.deployment.serviceUrl}`}</DeploymentServiceLink>
+              : <span>-</span>
+            }
+          </div>
+        </DeploymentBox>
         <Usage />
         <Footer>
-          CodeCommission
+          <span>
+            built by <FooterLink href="https://github.com/mikebild">@mikebild</FooterLink>
+            {' '}&{' '}
+            <FooterLink href="https://github.com/codecommission">@codecommission</FooterLink>
+          </span>
+          <span>
+            powered by <FooterLink href="https://www.dropstack.run">dropstack</FooterLink>
+            {' '}|{' '}
+            <FooterLink href="https://github.com/codecommission/dropstack-deploy">source</FooterLink>
+          </span>
         </Footer>
       </Main>
     )

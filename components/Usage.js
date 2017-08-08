@@ -3,6 +3,7 @@ import styled from 'styled-components'
 
 const Main = styled.div`
   font-family: Consolas, monaco, monospace;
+  font-size: 12px;
   max-width: 800px;
   height: 100vh;
   display: flex;

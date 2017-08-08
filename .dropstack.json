@@ -1,0 +1,9 @@
+{
+  "variables": "",
+  "instances": 1,
+  "alias": "deploy.cloud.dropstack.run",
+  "type": "npm",
+  "excludes": [],
+  "name": "bcrzryba",
+  "serviceUrl": "bcrzryba.cloud.dropstack.run"
+}
