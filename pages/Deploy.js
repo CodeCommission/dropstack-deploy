@@ -13,7 +13,9 @@ export default {
 
     const repo = parseGitHubURL(req.body.repo) || {}
     const extractedRepoFolderPath = path.parse(repo.pathname)
-    const extractedRepoPath = path.resolve(`${repo.name}-${repo.branch}/${extractedRepoFolderPath.name}`)
+    const extractedRepoPath = extractedRepoFolderPath.dir.split('/').length > 1
+      ? path.resolve(`${repo.name}-${repo.branch}/${extractedRepoFolderPath.name}`)
+      : path.resolve(`${repo.name}-${repo.branch}/`)
     const tarFileResponse = await fetch(`https://codeload.github.com/${repo.repository}/tar.gz/${repo.branch}`)
     const tarFileResponseExtract = tar.extract('./')
 

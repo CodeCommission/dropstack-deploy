@@ -150,7 +150,7 @@ const DeploymentInputLabel = styled.div`
 export default class Index extends React.Component {
   state = {
     envVars: [],
-    repo: this.props.repo.href,
+    repo: this.props.repo,
     token: '',
     deployment: {},
     isLoading: false,
@@ -160,10 +160,13 @@ export default class Index extends React.Component {
   }
 
   static async getInitialProps({query}) {
-    const path = require('path')
     const repo = parseGitHubURL(query.repo) || {}
-    if(repo.pathname) repo.path = path.parse(repo.pathname).name
-    return { repo }
+    return {repo}
+  }
+
+  parseGitURL (value) {
+    const repo = parseGitHubURL(value) || {}
+    this.setState({repo})
   }
 
   deploy () {
@@ -177,17 +180,24 @@ export default class Index extends React.Component {
 
     this.setState({isLoading: true, deployError: ''})
     const es = new EventSource(`https://api.cloud.dropstack.run/deploys/live`, {headers: {authorization: `Bearer ${this.state.token}`, connection: 'keep-alive', 'cache-control': 'no-cache'}});
+
     es.onerror = e => {
       es.close()
       this.setState({deployError: 'Deployment error occurred. Retry please.', isLoading: false})
     }
+
     es.onmessage = e => {
-     let progressState = {};
+      let progressState = {};
       try {
         progressState = JSON.parse(e.data)
       } catch(e) {}
 
       this.setState({deployment: Object.assign({}, this.state.deployment, progressState)})
+
+      if(progressState.deployProgress === 'error') {
+        es.close()
+        this.setState({isLoading: false, deployError: progressState.error})
+      }
 
       if(progressState.deployProgress === 'registrated') {
         es.close()
@@ -196,7 +206,7 @@ export default class Index extends React.Component {
     }
     es.onopen = e => {
       const serviceVariables = this.state.envVars.map(x => x.join('=')).join(',')
-      fetch(`/deploy`, {body: JSON.stringify({repo: this.state.repo, envVars: serviceVariables, token: this.state.token, alias: this.state.alias}), method: 'POST', headers: {authorization: `Bearer ${this.state.token}`, 'content-type': 'application/json'}})
+      fetch(`/deploy`, {body: JSON.stringify({repo: this.state.repo.href, envVars: serviceVariables, token: this.state.token, alias: this.state.alias}), method: 'POST', headers: {authorization: `Bearer ${this.state.token}`, 'content-type': 'application/json'}})
       .then(response => response.json())
       .then(data => this.setState({deployment: data}))
       .catch(error => this.setState({deployError: error.message}))
@@ -206,13 +216,11 @@ export default class Index extends React.Component {
   addEnvVarKey(key, index) {
     this.state.envVars[index] = [key, '']
     this.setState({envVars: this.state.envVars})
-    console.log(this.state.envVars)
   }
 
   addEnvVarValue(value, index) {
     this.state.envVars[index] = [this.state.envVars[index][0], value]
     this.setState({envVars: this.state.envVars})
-    console.log(this.state.envVars)
   }
 
   removeEnvVar(index) {
@@ -221,7 +229,7 @@ export default class Index extends React.Component {
   }
 
   render() {
-    const {branch, owner, name, repository, href, path} = this.props.repo
+    const {branch, owner, name, repository, href, path} = this.state.repo
 
     return (
       <Main>
@@ -234,7 +242,7 @@ export default class Index extends React.Component {
         <div>
           <DeploymentInputBox>
             <DeploymentInputLabel>URL to a GitHub repo</DeploymentInputLabel>&nbsp;{this.state.repoError && <ErrorMessage>{this.state.repoError}</ErrorMessage>}
-            <DeployInput type="text" placeholder="https://github.com/CodeCommission/dropstack-examples/tree/master/html-example" defaultValue={href} onBlur={e => this.setState({repo: e.target.value})} />
+            <DeployInput type="text" placeholder="https://github.com/CodeCommission/dropstack-examples/tree/master/html-example" defaultValue={href} onBlur={e => this.parseGitURL(e.target.value)} />
           </DeploymentInputBox>
           <DeploymentInputBox>
             <DeploymentInputLabel>API JSON Web Token (JWT)</DeploymentInputLabel>&nbsp;{this.state.tokenError && <ErrorMessage>{this.state.tokenError}</ErrorMessage>}
