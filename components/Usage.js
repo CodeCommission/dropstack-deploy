@@ -24,11 +24,11 @@ const Pre = styled.pre`
   padding: 15px;
 `
 
-const Usage = () => (
+const Usage = ({repo: {href = 'https://github.com/CodeCommission/dropstack-examples/tree/master/html-example'}}) => (
   <Main>
     <h3>### usage</h3>
     <p>
-      <a href="https://deploy.cloud.dropstack.run?repo=https://github.com/CodeCommission/dropstack-examples/tree/master/html-example">
+      <a href={`https://deploy.cloud.dropstack.run?repo=${href}`}>
         <img src="button.svg" />
       </a>
     </p>
@@ -36,7 +36,7 @@ const Usage = () => (
     <p>To add one-click deploys to your open source project, include the button to your
     readme:</p>
 
-    <Pre>[![Deploy to dropstack](https://deploy.cloud.dropstack.run/button.svg)](https://deploy.cloud.dropstack.run?repo=https://github.com/CodeCommission/dropstack-examples/tree/master/html-example)</Pre>
+    <Pre>[![Deploy to dropstack](https://deploy.cloud.dropstack.run/button.svg)](https://deploy.cloud.dropstack.run?repo={href})</Pre>
     <p>
       Be sure to set the <Code>repo</Code> parameter to the GitHub url of your project.
       This will result in the following link:

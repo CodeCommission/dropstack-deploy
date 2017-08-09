@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import parseGitHubURL from 'parse-github-url'
 import Usage from '../components/Usage'
 import EventSource from 'eventsource'
+import {isWebUri} from 'valid-url'
 
 const Main = styled.div`
   font-family: Consolas, monaco, monospace;
@@ -165,8 +166,10 @@ export default class Index extends React.Component {
   }
 
   parseGitURL (value) {
+    if(!value) return this.setState({repoError: 'Missing', repo: {}})
+    if(!isWebUri(value)) return this.setState({repoError: 'Invalid URL'})
     const repo = parseGitHubURL(value) || {}
-    this.setState({repo})
+    this.setState({repo, repoError: ''})
   }
 
   deploy () {
@@ -176,7 +179,7 @@ export default class Index extends React.Component {
     if(!this.state.token) this.setState({tokenError: 'Missing'})
     else this.setState({tokenError: ''})
 
-    if(!(this.state.repo && this.state.token)) return
+    if(!(this.state.repo && this.state.repo.href && this.state.token)) return
 
     this.setState({isLoading: true, deployError: ''})
     const es = new EventSource(`https://api.cloud.dropstack.run/deploys/live`, {headers: {authorization: `Bearer ${this.state.token}`, connection: 'keep-alive', 'cache-control': 'no-cache'}});
@@ -237,7 +240,7 @@ export default class Index extends React.Component {
         <small>&gt; One click deploys to <PrimaryLink href="https://dropstack.run" target="_blank">dropstack|cloud</PrimaryLink></small>
         <HeaderBox>
           <h2>## deploying</h2>
-          <div>{repository ? `${repository} ${path} directory in ` : ''}{branch ? `${branch} branch of ` : ''}<RepoLink href={href} target="_blank">{name}</RepoLink></div>
+          <div>{repository ? `${path} directory in ` : ''}{branch ? `${branch} branch of ` : ''}<RepoLink href={href} target="_blank">{name}</RepoLink></div>
         </HeaderBox>
         <div>
           <DeploymentInputBox>
@@ -297,7 +300,7 @@ export default class Index extends React.Component {
             }
           </div>
         </DeploymentBox>
-        <Usage />
+        <Usage repo={this.state.repo} />
         <Footer>
           <span>
             built by <PrimaryLink href="https://github.com/mikebild">@mikebild</PrimaryLink>
