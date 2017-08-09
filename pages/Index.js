@@ -170,7 +170,7 @@ export default class Index extends React.Component {
   }
 
   deploy () {
-    if(!this.state.repo) this.setState({repoError: 'Missing'})
+    if(!(this.state.repo && this.state.repo.href)) this.setState({repoError: 'Missing'})
     else this.setState({repoError: ''})
 
     if(!this.state.token) this.setState({tokenError: 'Missing'})
