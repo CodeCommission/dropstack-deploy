@@ -62,7 +62,6 @@ export default {
           .then(() => fse.remove(path.resolve(tranferToTarGzipFileName)))
           .then(() => fse.remove(path.resolve(`${repo.name}-${repo.branch}`)))
           .catch(error => console.error(error))
-
         })
       })
     })
