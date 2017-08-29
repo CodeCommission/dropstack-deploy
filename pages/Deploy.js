@@ -7,10 +7,10 @@ export default {
     const fse = require('fs-extra')
     const path = require('path')
     const tar = require('tar-fs')
+    const zlib = require('zlib')
+    const gzip = zlib.createGzip();
     const gunzip = require('gunzip-maybe')
-    const MemoryStream = require('memory-stream')
     const FormData = require('form-data')
-
     const repo = parseGitHubURL(req.body.repo) || {}
     const extractedRepoFolderPath = path.parse(repo.pathname)
     const extractedRepoPath = extractedRepoFolderPath.dir.split('/').length > 1
@@ -26,31 +26,44 @@ export default {
     tarFileResponseExtract
     .on('finish', () => {
       console.log('Extracting done')
+
       const tranferToTarFileName = `${extractedRepoFolderPath.name}.tar`
+      const tranferToTarGzipFileName = `${extractedRepoFolderPath.name}.tar.gz`
       const tmpTarFile = fs.createWriteStream(tranferToTarFileName)
 
       tar.pack(extractedRepoPath).pipe(tmpTarFile)
 
-      tmpTarFile.on('finish', () => {
+      tmpTarFile
+      .on('finish', () => {
         console.log('Repacking done')
-        const form = new FormData()
-        const startDate = new Date()
-        form.append('serviceAlias', req.body.alias)
-        form.append('serviceVariables', req.body.envVars)
-        form.append(tranferToTarFileName, fs.createReadStream(tranferToTarFileName))
 
-        fetch(`https://api.cloud.dropstack.run/deploys/`, {
-          method: 'POST',
-          body: form,
-          headers: { Authorization: `Bearer ${req.body.token}` }
+        fs.createReadStream(tranferToTarFileName)
+        .pipe(gzip)
+        .pipe(fs.createWriteStream(tranferToTarGzipFileName))
+        .on('finish', () => {
+          console.log('Zip done')
+
+          const form = new FormData()
+          const startDate = new Date()
+          form.append('serviceAlias', req.body.alias || '')
+          form.append('serviceVariables', req.body.envVars || '')
+          form.append(tranferToTarGzipFileName, fs.createReadStream(tranferToTarGzipFileName))
+
+          fetch(`https://api.cloud.dropstack.run/deploys`, {
+            method: 'POST',
+            body: form,
+            headers: { Authorization: `Bearer ${req.body.token}` }
+          })
+          .then(response => response.json())
+          .then(data => res.end(JSON.stringify({...repo, ...data})))
+          .then(() => console.log('Deployment done'))
+          .catch(error => console.error(error))
+          .then(() => fse.remove(path.resolve(tranferToTarFileName)))
+          .then(() => fse.remove(path.resolve(tranferToTarGzipFileName)))
+          .then(() => fse.remove(path.resolve(`${repo.name}-${repo.branch}`)))
+          .catch(error => console.error(error))
+
         })
-        .then(response => response.json())
-        .then(data => res.end(JSON.stringify({...repo, ...data})))
-        .then(() => console.log('Deployment done'))
-        .catch(error => console.error(error))
-        .then(() => fse.remove(path.resolve(tranferToTarFileName)))
-        .then(() => fse.remove(path.resolve(`${repo.name}-${repo.branch}`)))
-        .catch(error => console.error(error))
       })
     })
   }

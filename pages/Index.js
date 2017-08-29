@@ -4,6 +4,7 @@ import parseGitHubURL from 'parse-github-url'
 import Usage from '../components/Usage'
 import EventSource from 'eventsource'
 import {isWebUri} from 'valid-url'
+import appPackage from '../package.json'
 
 const Main = styled.div`
   font-family: Consolas, monaco, monospace;
@@ -303,7 +304,7 @@ export default class Index extends React.Component {
         <Usage repo={this.state.repo} />
         <Footer>
           <span>
-            built by <PrimaryLink href="https://github.com/mikebild">@mikebild</PrimaryLink>
+          {appPackage.name} v{appPackage.version} built by <PrimaryLink href="https://github.com/mikebild">@mikebild</PrimaryLink>
             {' '}&{' '}
             <PrimaryLink href="https://github.com/codecommission">@codecommission</PrimaryLink>
           </span>
